@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>QRIS Saya</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body, html {
+      height: 100%;
+      font-family: Arial, sans-serif;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+    }
+
+    #bgVideo {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: -1;
+    }
+
+    .container {
+      max-width: 500px;
+      margin: auto;
+      background: rgba(255, 255, 255, 0.95);
+      padding: 20px;
+      text-align: center;
+      border-radius: 12px;
+      margin-top: 30px;
+    }
+
+    h1 { color: #1e3a8a; font-size: 24px; }
+    .warning {
+      background: #fee2e2;
+      color: #b91c1c;
+      padding: 10px;
+      font-weight: bold;
+      margin-bottom: 20px;
+      border-radius: 8px;
+    }
+
+    .qr-image {
+      width: 100%;
+      max-width: 280px;
+      border-radius: 10px;
+      cursor: pointer;
+      margin-bottom: 15px;
+    }
+
+    .btn-group {
+      margin-top: 20px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .btn {
+      padding: 12px 20px;
+      background-color: #0ea5e9;
+      color: #fff;
+      border-radius: 10px;
+      text-decoration: none;
+      font-weight: bold;
+      min-width: 120px;
+      text-align: center;
+      cursor: pointer;
+    }
+
+    .popup, .popup-dana {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.85);
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+    }
+
+    .popup-content {
+      position: relative;
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      text-align: center;
+    }
+
+    .popup-content img {
+      width: 100%;
+      max-width: 400px;
+      border-radius: 10px;
+      margin-bottom: 15px;
+    }
+
+    .download-btn {
+      padding: 12px 24px;
+      background-color: #10b981;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .close-btn {
+      position: absolute;
+      font-size: 26px;
+      font-weight: bold;
+      background: none;
+      border: none;
+      cursor: pointer;
+    }
+
+    .close-qr {
+      top: 10px;
+      right: 10px;
+      color: red;
+    }
+
+    .close-dana {
+      top: 20px;
+      right: 20px;
+      color: blue;
+    }
+
+    .popup-dana-inner {
+      background: white;
+      padding: 20px 30px;
+      border-radius: 10px;
+      text-align: center;
+      position: relative;
+    }
+
+    .dana-text {
+      font-size: 18px;
+      margin-bottom: 15px;
+    }
+
+    .dana-number {
+      background: #1e3a8a;
+      color: white;
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-weight: bold;
+      margin-left: 5px;
+    }
+
+    .copy-btn {
+      padding: 10px 20px;
+      background-color: #34d399;
+      border: none;
+      color: white;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .copied-text {
+      margin-top: 10px;
+      color: green;
+      font-weight: bold;
+      display: none;
+    }
+
+    .payment-info {
+      margin-top: 25px;
+      font-weight: bold;
+      color: #1f2937;
+    }
+  </style>
+</head>
+<body oncontextmenu="return false">
+
+<!-- ✅ Video Background (AUTO SOUND) -->
+<video autoplay loop playsinline id="bgVideo">
+  <source src="bg.mp4" type="video/mp4">
+  Browser Anda tidak mendukung video.
+</video>
+
+<script>
+  // Force enable sound (if allowed by browser)
+  const video = document.getElementById("bgVideo");
+  video.muted = false;
+  video.volume = 1.0;
+  video.play().catch(() => {
+    // If browser blocks autoplay with sound, it will fail silently
+  });
+</script>
+
+<div class="container">
+  <h1>QRIS Saya</h1>
+  <div class="warning">WAJIB KIRIM SS BUKTI, KALO TIDAK TIDAK SAYA TERIMA</div>
+  <div class="merchant-name">Lanzmakan</div>
+  <img src="https://files.catbox.moe/z7scl9.png" alt="QRIS" class="qr-image" onclick="openPopup()" />
+
+  <div class="payment-info">Konfirmasi pembayaran bukti transfer</div>
+
+  <div class="btn-group">
+    <a href="https://wa.me/6281376714450" class="btn">WhatsApp</a>
+    <a href="https://t.me/La4Youu" class="btn">Telegram</a>
+    <a href="https://whatsapp.com/channel/0029Vb6K51h0G0XpUl1YsW1N" class="btn">Testimoni</a>
+    <button class="btn" onclick="openDana()">E-Wallet DANA</button>
+  </div>
+</div>
+
+<!-- QRIS Popup -->
+<div class="popup" id="popup">
+  <div class="popup-content">
+    <button class="close-btn close-qr" onclick="closePopup()">X</button>
+    <img src="https://files.catbox.moe/z7scl9.png" alt="QRIS Fullscreen">
+    <button class="download-btn" onclick="downloadImage()">Unduh QR</button>
+  </div>
+</div>
+
+<!-- DANA Popup -->
+<div class="popup-dana" id="popupDana">
+  <button class="close-btn close-dana" onclick="closeDana()">X</button>
+  <div class="popup-dana-inner">
+    <div class="dana-text">Nomor DANA:<span class="dana-number" id="danaNumber">082171554971</span></div>
+    <button class="copy-btn" onclick="copyDana()">SALIN</button>
+    <div id="copiedMsg" class="copied-text">tersalin ✅</div>
+  </div>
+</div>
+
+<script>
+  function openPopup() {
+    document.getElementById('popup').style.display = 'flex';
+  }
+
+  function closePopup() {
+    document.getElementById('popup').style.display = 'none';
+  }
+
+  function openDana() {
+    document.getElementById('popupDana').style.display = 'flex';
+  }
+
+  function closeDana() {
+    document.getElementById('popupDana').style.display = 'none';
+  }
+
+  function copyDana() {
+    const danaNumber = document.getElementById("danaNumber").textContent;
+    const textArea = document.createElement("textarea");
+    textArea.value = danaNumber;
+    document.body.appendChild(textArea);
+    textArea.select();
+    document.execCommand("copy");
+    document.body.removeChild(textArea);
+
+    const msg = document.getElementById("copiedMsg");
+    msg.style.display = "block";
+    setTimeout(() => {
+      msg.style.display = "none";
+    }, 1500);
+  }
+
+  function downloadImage() {
+    const url = "https://files.catbox.moe/z7scl9.png";
+    fetch(url)
+      .then(res => res.blob())
+      .then(blob => {
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = "QRIS_Lanzmakan.png";
+        a.click();
+        URL.revokeObjectURL(a.href);
+      });
+  }
+</script>
+
+</body>
+</html>
